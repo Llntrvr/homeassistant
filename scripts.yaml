@@ -1,0 +1,52 @@
+# Quick way to create a random light show for christmas / halloween
+# Best to create a helper / switch group with all the lights you want turned on called "switch.all_christmas_lights"
+christmas_lights:
+  alias: Christmas Lights
+  variables:
+    switch_entity: switch.all_christmas_lights
+    delay_seconds_min: 2
+    delay_seconds_max: 5
+    count_min: 2
+    count_max: 30
+  sequence:
+  - repeat:
+      count: '{{ range(count_min, count_max)|random|int }}'
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: '{{ range(delay_seconds_min, delay_seconds_max)|random|int }}'
+          milliseconds: 0
+        alias: Delay for Random
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: '{{ switch_entity }}'
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: '{{ range(delay_seconds_min, delay_seconds_max)|random|int }}'
+          milliseconds: 0
+        alias: Delay for Random
+      - repeat:
+          count: '{{ expand(switch_entity) | list | count }}'
+          sequence:
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: '{{ range(delay_seconds_min, delay_seconds_max)|random|int
+                }}'
+              milliseconds: 0
+            alias: Delay for Random
+          - service: switch.turn_on
+            data: {}
+            target:
+              entity_id: '{{ expand(switch_entity) | map(attribute=''entity_id'')
+                | list | random }}'
+        alias: Randomly Turn on Lights
+    alias: Random
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: '{{ switch_entity }}'
+  mode: restart
